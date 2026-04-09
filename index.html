@@ -1,1 +1,106 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USPS Shift Tracker</title>
+    <style>
+        :root { --usps-blue: #004B87; --usps-red: #E71921; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; padding: 15px; }
+        .card { background: white; max-width: 400px; margin: auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 8px solid var(--usps-blue); }
+        h2 { text-align: center; color: var(--usps-blue); margin-bottom: 5px; }
+        p.sub { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .stats { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 20px; }
+        .stat-line { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .highlight { font-weight: bold; color: var(--usps-blue); }
+        .remaining { font-size: 1.2rem; text-align: center; color: var(--usps-red); font-weight: bold; border-top: 1px solid #ddd; pt: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>📬 USPS Shift Tracker</h2>
+    <p class="sub">Convert 24hr Time to Decimal Clicks</p>
+
+    <div class="input-group">
+        <label>Begin Tour (BT) - e.g. 07:30</label>
+        <input type="time" id="bt" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label>Out Lunch (OL)</label>
+        <input type="time" id="ol" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label>In Lunch (IL)</label>
+        <input type="time" id="il" oninput="calculate()">
+    </div>
+
+    <div class="input-group">
+        <label>End Tour (ET) - Optional for Remaining Time</label>
+        <input type="time" id="et" oninput="calculate()">
+    </div>
+
+    <div class="stats">
+        <div class="stat-line">
+            <span>Work Time:</span>
+            <span class="highlight" id="workTime">0.00 units</span>
+        </div>
+        <div class="stat-line">
+            <span>Lunch Duration:</span>
+            <span class="highlight" id="lunchTime">0.00 units</span>
+        </div>
+        <div class="remaining" id="remaining">
+            Remaining: 8.00 units
+        </div>
+    </div>
+</div>
+
+<script>
+    function timeToDecimal(timeStr) {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const clicks = Math.round((minutes / 60) * 100);
+        return hours + (clicks / 100);
+    }
+
+    function calculate() {
+        const bt = timeToDecimal(document.getElementById('bt').value);
+        const ol = timeToDecimal(document.getElementById('ol').value);
+        const il = timeToDecimal(document.getElementById('il').value);
+        const et = timeToDecimal(document.getElementById('et').value);
+
+        let lunch = 0;
+        if (il > ol && ol > 0) {
+            lunch = il - ol;
+        }
+
+        let worked = 0;
+        // If ET is entered, calculate total worked. If not, assume "Now"
+        if (et > bt) {
+            worked = (et - bt) - lunch;
+        } else {
+            // Optional: You could use the current time here
+            worked = 0; 
+        }
+
+        const remaining = 8.00 - worked;
+
+        document.getElementById('workTime').innerText = worked.toFixed(2) + " units";
+        document.getElementById('lunchTime').innerText = lunch.toFixed(2) + " units";
+        
+        if (worked > 0) {
+            document.getElementById('remaining').innerText = "Remaining (for 8hr): " + Math.max(0, remaining).toFixed(2) + " units";
+        } else {
+            document.getElementById('remaining').innerText = "Enter BT to start";
+        }
+    }
+</script>
+
+</body>
+</html>
