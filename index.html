@@ -1,106 +1,108 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USPS Shift Tracker</title>
+    <title>USPS Time & Duration Tracker</title>
     <style>
-        :root { --usps-blue: #004B87; --usps-red: #E71921; }
-        body { font-family: -apple-system, sans-serif; background: #f0f2f5; padding: 15px; }
-        .card { background: white; max-width: 400px; margin: auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-top: 8px solid var(--usps-blue); }
-        h2 { text-align: center; color: var(--usps-blue); margin-bottom: 5px; }
-        p.sub { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        .stats { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-top: 20px; }
-        .stat-line { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .highlight { font-weight: bold; color: var(--usps-blue); }
-        .remaining { font-size: 1.2rem; text-align: center; color: var(--usps-red); font-weight: bold; border-top: 1px solid #ddd; pt: 10px; margin-top: 10px; }
+        :root { --usps-blue: #004B87; --usps-red: #E71921; --gray: #f4f4f4; }
+        body { font-family: -apple-system, sans-serif; background: #eaeff2; padding: 15px; }
+        .card { background: white; max-width: 450px; margin: auto; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 10px solid var(--usps-blue); }
+        h2 { text-align: center; color: var(--usps-blue); margin-top: 0; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 0.75rem; font-weight: bold; color: #555; margin-bottom: 4px; }
+        input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        
+        .duration-box { background: var(--gray); padding: 8px; border-radius: 6px; margin: 5px 0 15px 0; font-size: 0.85rem; border-left: 4px solid #ccc; }
+        .duration-box span { font-weight: bold; color: var(--usps-blue); }
+
+        .summary { background: var(--usps-blue); color: white; padding: 15px; border-radius: 8px; margin-top: 10px; }
+        .stat { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .total-row { font-size: 1.2rem; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; margin-top: 10px; font-weight: bold; }
+        .remaining-row { background: #fff; color: var(--usps-red); padding: 10px; border-radius: 5px; text-align: center; font-size: 1.3rem; margin-top: 15px; border: 2px solid var(--usps-red); }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>📬 USPS Shift Tracker</h2>
-    <p class="sub">Convert 24hr Time to Decimal Clicks</p>
+    <h2>📬 USPS Duration Tracker</h2>
 
-    <div class="input-group">
-        <label>Begin Tour (BT) - e.g. 07:30</label>
-        <input type="time" id="bt" oninput="calculate()">
-    </div>
-
-    <div class="input-group">
-        <label>Out Lunch (OL)</label>
-        <input type="time" id="ol" oninput="calculate()">
-    </div>
-
-    <div class="input-group">
-        <label>In Lunch (IL)</label>
-        <input type="time" id="il" oninput="calculate()">
-    </div>
-
-    <div class="input-group">
-        <label>End Tour (ET) - Optional for Remaining Time</label>
-        <input type="time" id="et" oninput="calculate()">
-    </div>
-
-    <div class="stats">
-        <div class="stat-line">
-            <span>Work Time:</span>
-            <span class="highlight" id="workTime">0.00 units</span>
+    <div class="input-row">
+        <div class="input-group">
+            <label>Begin Tour (BT)</label>
+            <input type="time" id="bt" oninput="calculate()">
         </div>
-        <div class="stat-line">
-            <span>Lunch Duration:</span>
-            <span class="highlight" id="lunchTime">0.00 units</span>
+        <div class="input-group">
+            <label>Out Lunch (OL)</label>
+            <input type="time" id="ol" oninput="calculate()">
         </div>
-        <div class="remaining" id="remaining">
-            Remaining: 8.00 units
+    </div>
+    <div class="duration-box">AM Work Duration: <span id="dur_am">0.00</span> units</div>
+
+    <div class="input-row">
+        <div class="input-group">
+            <label>In Lunch (IL)</label>
+            <input type="time" id="il" oninput="calculate()">
         </div>
+        <div class="input-group">
+            <label>End Tour (ET)</label>
+            <input type="time" id="et" oninput="calculate()">
+        </div>
+    </div>
+    <div class="duration-box">PM Work Duration: <span id="dur_pm">0.00</span> units</div>
+    <div class="duration-box" style="background: #fff0f0; border-left-color: var(--usps-red);">Lunch Break: <span id="dur_lunch">0.00</span> units</div>
+
+    <div class="summary">
+        <div class="stat"><span>Total Worked:</span> <span id="total_work">0.00</span></div>
+        <div class="stat total-row"><span>Total Day Units:</span> <span id="total_day">0.00</span></div>
+    </div>
+
+    <div class="remaining-row" id="remaining">
+        Remaining for 8hr: 8.00
     </div>
 </div>
 
 <script>
-    function timeToDecimal(timeStr) {
-        if (!timeStr) return 0;
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const clicks = Math.round((minutes / 60) * 100);
-        return hours + (clicks / 100);
+    function toDecimal(timeStr) {
+        if (!timeStr) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h + (Math.round((m / 60) * 100) / 100);
     }
 
     function calculate() {
-        const bt = timeToDecimal(document.getElementById('bt').value);
-        const ol = timeToDecimal(document.getElementById('ol').value);
-        const il = timeToDecimal(document.getElementById('il').value);
-        const et = timeToDecimal(document.getElementById('et').value);
+        const bt = toDecimal(document.getElementById('bt').value);
+        const ol = toDecimal(document.getElementById('ol').value);
+        const il = toDecimal(document.getElementById('il').value);
+        const et = toDecimal(document.getElementById('et').value);
 
-        let lunch = 0;
-        if (il > ol && ol > 0) {
-            lunch = il - ol;
-        }
-
-        let worked = 0;
-        // If ET is entered, calculate total worked. If not, assume "Now"
-        if (et > bt) {
-            worked = (et - bt) - lunch;
-        } else {
-            // Optional: You could use the current time here
-            worked = 0; 
-        }
-
-        const remaining = 8.00 - worked;
-
-        document.getElementById('workTime').innerText = worked.toFixed(2) + " units";
-        document.getElementById('lunchTime').innerText = lunch.toFixed(2) + " units";
+        let amWork = (ol && bt && ol > bt) ? (ol - bt) : 0;
+        let pmWork = (et && il && et > il) ? (et - il) : 0;
+        let lunch = (il && ol && il > ol) ? (il - ol) : 0;
         
-        if (worked > 0) {
-            document.getElementById('remaining').innerText = "Remaining (for 8hr): " + Math.max(0, remaining).toFixed(2) + " units";
+        let totalWorked = amWork + pmWork;
+        let totalDay = (et && bt) ? (et - bt) : 0;
+        let remain = 8.00 - totalWorked;
+
+        // Update UI
+        document.getElementById('dur_am').innerText = amWork.toFixed(2);
+        document.getElementById('dur_pm').innerText = pmWork.toFixed(2);
+        document.getElementById('dur_lunch').innerText = lunch.toFixed(2);
+        document.getElementById('total_work').innerText = totalWorked.toFixed(2);
+        document.getElementById('total_day').innerText = totalDay.toFixed(2);
+        
+        const remainDisplay = document.getElementById('remaining');
+        if (totalWorked > 0) {
+            remainDisplay.innerText = "Remaining (8hr): " + Math.max(0, remain).toFixed(2) + " units";
+            remainDisplay.style.color = remain < 0 ? "green" : "var(--usps-red)";
         } else {
-            document.getElementById('remaining').innerText = "Enter BT to start";
+            remainDisplay.innerText = "Enter BT & OL to start";
         }
     }
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
